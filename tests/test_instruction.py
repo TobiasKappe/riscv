@@ -95,13 +95,13 @@ class TestLoadWordRiscInstruction:
         machine.registers[1] = RiscInteger(base)
         machine.memory[address] = RiscInteger(value)
 
-        lw = LoadWordRiscInstruction(2, RiscInteger(offset), 1)
+        lw = LoadWordRiscInstruction(2, 1, RiscInteger(offset))
         lw.run(machine)
 
         assert machine.registers[2] == RiscInteger(value)
 
     def test_encode(self):
-        lw = LoadWordRiscInstruction(14, RiscInteger(-586), 22)
+        lw = LoadWordRiscInstruction(14, 22, RiscInteger(-586))
         assert lw.encode() == \
             RiscInteger(0b11011011011010110010011100000011, signed=False)
 
@@ -119,13 +119,13 @@ class TestStoreWordRiscInstruction:
         machine.registers[1] = RiscInteger(base)
         machine.registers[2] = RiscInteger(value)
 
-        sw = StoreWordRiscInstruction(2, RiscInteger(offset), 1)
+        sw = StoreWordRiscInstruction(1, 2, RiscInteger(offset))
         sw.run(machine)
 
         assert address in machine.memory
         assert machine.memory[address] == RiscInteger(value)
 
     def test_encode(self):
-        sw = StoreWordRiscInstruction(19, RiscInteger(1365), 29)
+        sw = StoreWordRiscInstruction(29, 19, RiscInteger(1365))
         assert sw.encode() == \
             RiscInteger(0b01010101001111101010101010100011)

@@ -124,3 +124,135 @@ class RiscInstruction:
             instructions.append(instruction)
 
         return instructions
+
+
+class RTypeRiscInstruction(RiscInstruction):
+    FORMAT = r'([a-z0-9]+),\s*([a-z0-9]+),\s*([a-z0-9]+)'
+
+    @multimethod
+    def __init__(self, rd: int, rs1: int, rs2: int):
+        self.rd = rd
+        self.rs1 = rs1
+        self.rs2 = rs2
+
+    @multimethod
+    def __init__(self, parts: Tuple[str, str, str], *args): # noqa
+        self.rd = RiscInstruction.parse_register(parts[0])
+        self.rs1 = RiscInstruction.parse_register(parts[1])
+        self.rs2 = RiscInstruction.parse_register(parts[2])
+
+    def assembly(self) -> str:
+        return f'{self.mnemonic} x{self.rd}, x{self.rs1}, x{self.rs2}'
+
+    def encode(self) -> RiscInteger:
+        return RiscInteger([
+            (self.OPCODE, 7),
+            (self.rd, 5),
+            (self.FUNCT3, 3),
+            (self.rs1, 5),
+            (self.rs2, 5),
+            (self.FUNCT7, 7),
+        ])
+
+
+class ITypeRiscInstruction(RiscInstruction):
+    FORMAT = r'([a-z0-9]+),\s*([a-z0-9]+),\s*(-?[0-9]+)'
+
+    @multimethod
+    def __init__(self, rd: int, rs1: int, n: RiscInteger):
+        self.rd = rd
+        self.rs1 = rs1
+        self.n = n
+
+    @multimethod
+    def __init__(self, parts: Tuple[str, str, str], *args): # noqa
+        self.rd = RiscInstruction.parse_register(parts[0])
+        self.rs1 = RiscInstruction.parse_register(parts[1])
+        self.n = RiscInstruction.parse_immediate(parts[2])
+
+    def assembly(self) -> str:
+        return f'{self.mnemonic} x{self.rd}, x{self.rs1}, {self.n}'
+
+    def encode(self) -> RiscInteger:
+        return RiscInteger([
+            (self.OPCODE, 7),
+            (self.rd, 5),
+            (self.FUNCT3, 3),
+            (self.rs1, 5),
+            (self.n, 12),
+        ])
+
+
+class SBTypeRiscInstruction(RiscInstruction):
+    FORMAT = r'([a-z0-9]+),\s*([a-z0-9]+),\s*([a-zA-Z_][a-zA-Z_0-9]*|-?[0-9]+)'
+
+    @multimethod
+    def __init__(self, rs1: int, rs2: int, offset: RiscInteger):
+        self.rs1 = rs1
+        self.rs2 = rs2
+        self.offset = offset
+
+    @multimethod
+    def __init__( # noqa
+        self,
+        parts: Tuple[str, str, str],
+        locations: Dict[str, RiscInteger],
+        location: RiscInteger
+    ):
+        self.rs1 = RiscInstruction.parse_register(parts[0])
+        self.rs2 = RiscInstruction.parse_register(parts[1])
+
+        try:
+            self.offset = RiscInstruction.parse_immediate(parts[2])
+        except RiscParseException:
+            try:
+                self.offset = locations[parts[2]] - location
+            except KeyError:
+                raise RiscParseException(
+                    f'Unable to resolve location "{parts[2]}"'
+                )
+
+    def assembly(self) -> str:
+        return f'{self.mnemonic} x{self.rs1}, x{self.rs2}, {self.offset}'
+
+    def encode(self, swirl=True) -> RiscInteger:
+        if swirl:
+            return RiscInteger([
+                (self.OPCODE, 7),
+                self.offset.bits[11:12],
+                self.offset.bits[1:5],
+                (self.FUNCT3, 3),
+                (self.rs1, 5),
+                (self.rs2, 5),
+                self.offset.bits[5:11],
+                self.offset.bits[12:13],
+            ])
+        else:
+            return RiscInteger([
+                (0b1100011, 7),
+                self.offset.bits[1:6],
+                (self.FUNCT3, 3),
+                (self.rs1, 5),
+                (self.rs2, 5),
+                self.offset.bits[6:13],
+            ])
+
+
+class STypeRiscInstruction(RiscInstruction):
+    FORMAT = r'([a-z0-9]+),\s*(-?[0-9]+)\(([a-z0-9]+)\)'
+
+    @multimethod
+    def __init__(self, rs1: int, rs2: int, n: RiscInteger):
+        self.rs1 = rs1
+        self.rs2 = rs2
+        self.n = n
+
+    def encode(self) -> RiscInteger:
+        return RiscInteger([
+            (self.OPCODE, 7),
+            self.n.bits[0:5],
+            (self.FUNCT3, 3),
+            (self.rs1, 5),
+            (self.rs2, 5),
+            self.n.bits[5:12],
+        ])
