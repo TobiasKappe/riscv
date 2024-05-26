@@ -10,8 +10,7 @@ class LoadWordRiscInstruction(ITypeRiscInstruction):
     OPCODE = 0b0000011
     FUNCT3 = 0b10
 
-    @ITypeRiscInstruction.__init__.register
-    def __init__(self, parts: Tuple[str, str, str], *args): # noqa
+    def parse_args(self, parts: Tuple[str, str, str], *args): # noqa
         self.rd = RiscInstruction.parse_register(parts[0])
         self.n = RiscInstruction.parse_immediate(parts[1])
         self.rs1 = RiscInstruction.parse_register(parts[2])
@@ -32,8 +31,7 @@ class StoreWordRiscInstruction(STypeRiscInstruction):
     OPCODE = 0b0100011
     FUNCT3 = 0b010
 
-    @STypeRiscInstruction.__init__.register
-    def __init__(self, parts: Tuple[str, str, str], *args): # noqa
+    def parse_args(self, parts: Tuple[str, str, str], *args): # noqa
         self.rs2 = RiscInstruction.parse_register(parts[0])
         self.n = RiscInstruction.parse_immediate(parts[1])
         self.rs1 = RiscInstruction.parse_register(parts[2])

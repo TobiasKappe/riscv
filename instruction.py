@@ -18,14 +18,30 @@ class RiscInstruction:
     INSTRUCTIONS = {}
 
     @multimethod
-    def __init__(self, code: RiscInteger): # noqa
+    def __init__(self, code: RiscInteger, *args, **kwargs): # noqa
         if code[:7] != self.OPCODE:
             raise RiscInstructionException('Wrong opcode')
+
+        self.decode(code, *args, **kwargs)
+
+    @multimethod
+    def __init__(self, parts: Tuple[str, str, str], *args): # noqa
+        return self.parse_args(parts, *args)
+
+    @multimethod
+    def __init__(self, *args, **kwargs): # noqa
+        return self.initialize(*args, **kwargs)
+
+    def parse_args(self, parts, *args):
+        raise NotImplementedError
 
     def run(self, machine: RiscMachine) -> None:
         raise NotImplementedError
 
     def assembly(self) -> str:
+        raise NotImplementedError
+
+    def decode(self, code: RiscInteger, *args, **kwargs):
         raise NotImplementedError
 
     def encode(self) -> RiscInteger:
@@ -129,22 +145,12 @@ class RiscInstruction:
 class RTypeRiscInstruction(RiscInstruction):
     FORMAT = r'([a-z0-9]+),\s*([a-z0-9]+),\s*([a-z0-9]+)'
 
-    @multimethod
-    def __init__(self, rd: int, rs1: int, rs2: int):
+    def initialize(self, rd: int, rs1: int, rs2: int):
         self.rd = rd
         self.rs1 = rs1
         self.rs2 = rs2
 
-    @multimethod
-    def __init__(self, parts: Tuple[str, str, str], *args): # noqa
-        self.rd = RiscInstruction.parse_register(parts[0])
-        self.rs1 = RiscInstruction.parse_register(parts[1])
-        self.rs2 = RiscInstruction.parse_register(parts[2])
-
-    @multimethod
-    def __init__(self, code: RiscInteger): # noqa
-        super().__init__(code)
-
+    def decode(self, code: RiscInteger): # noqa
         self.rd = code[7:12]
 
         if code[12:15] != self.FUNCT3:
@@ -155,6 +161,11 @@ class RTypeRiscInstruction(RiscInstruction):
 
         if code[25:] != self.FUNCT7:
             raise RiscInstructionException('Wrong funct7')
+
+    def parse_args(self, parts: Tuple[str, str, str], *args): # noqa
+        self.rd = RiscInstruction.parse_register(parts[0])
+        self.rs1 = RiscInstruction.parse_register(parts[1])
+        self.rs2 = RiscInstruction.parse_register(parts[2])
 
     def assembly(self) -> str:
         return f'{self.mnemonic} x{self.rd}, x{self.rs1}, x{self.rs2}'
@@ -173,22 +184,12 @@ class RTypeRiscInstruction(RiscInstruction):
 class ITypeRiscInstruction(RiscInstruction):
     FORMAT = r'([a-z0-9]+),\s*([a-z0-9]+),\s*(-?[0-9]+)'
 
-    @multimethod
-    def __init__(self, rd: int, rs1: int, n: RiscInteger):
+    def initialize(self, rd: int, rs1: int, n: RiscInteger):
         self.rd = rd
         self.rs1 = rs1
         self.n = n
 
-    @multimethod
-    def __init__(self, parts: Tuple[str, str, str], *args): # noqa
-        self.rd = RiscInstruction.parse_register(parts[0])
-        self.rs1 = RiscInstruction.parse_register(parts[1])
-        self.n = RiscInstruction.parse_immediate(parts[2])
-
-    @multimethod
-    def __init__(self, code: RiscInteger): # noqa
-        super().__init__(code)
-
+    def decode(self, code: RiscInteger): # noqa
         self.rd = code[7:12]
 
         if code[12:15] != self.FUNCT3:
@@ -199,6 +200,11 @@ class ITypeRiscInstruction(RiscInstruction):
             code.bits[20:],
             code.bits[31:32] * 20
         ])
+
+    def parse_args(self, parts: Tuple[str, str, str], *args): # noqa
+        self.rd = RiscInstruction.parse_register(parts[0])
+        self.rs1 = RiscInstruction.parse_register(parts[1])
+        self.n = RiscInstruction.parse_immediate(parts[2])
 
     def assembly(self) -> str:
         return f'{self.mnemonic} x{self.rd}, x{self.rs1}, {self.n}'
@@ -216,36 +222,12 @@ class ITypeRiscInstruction(RiscInstruction):
 class SBTypeRiscInstruction(RiscInstruction):
     FORMAT = r'([a-z0-9]+),\s*([a-z0-9]+),\s*([a-zA-Z_][a-zA-Z_0-9]*|-?[0-9]+)'
 
-    @multimethod
-    def __init__(self, rs1: int, rs2: int, offset: RiscInteger):
+    def initialize(self, rs1: int, rs2: int, offset: RiscInteger):
         self.rs1 = rs1
         self.rs2 = rs2
         self.offset = offset
 
-    @multimethod
-    def __init__( # noqa
-        self,
-        parts: Tuple[str, str, str],
-        locations: Dict[str, RiscInteger],
-        location: RiscInteger
-    ):
-        self.rs1 = RiscInstruction.parse_register(parts[0])
-        self.rs2 = RiscInstruction.parse_register(parts[1])
-
-        try:
-            self.offset = RiscInstruction.parse_immediate(parts[2])
-        except RiscParseException:
-            try:
-                self.offset = locations[parts[2]] - location
-            except KeyError:
-                raise RiscParseException(
-                    f'Unable to resolve location "{parts[2]}"'
-                )
-
-    @multimethod
-    def __init__(self, code: RiscInteger, swirl=True): # noqa
-        super().__init__(code)
-
+    def decode(self, code: RiscInteger, swirl=True): # noqa
         if swirl:
             self.offset = RiscInteger([
                 [False],
@@ -266,6 +248,26 @@ class SBTypeRiscInstruction(RiscInstruction):
 
         self.rs1 = code[15:20]
         self.rs2 = code[20:25]
+
+    def parse_args( # noqa
+        self,
+        parts: Tuple[str, str, str],
+        locations: Dict[str, RiscInteger],
+        location: RiscInteger,
+        *args
+    ):
+        self.rs1 = RiscInstruction.parse_register(parts[0])
+        self.rs2 = RiscInstruction.parse_register(parts[1])
+
+        try:
+            self.offset = RiscInstruction.parse_immediate(parts[2])
+        except RiscParseException:
+            try:
+                self.offset = locations[parts[2]] - location
+            except KeyError:
+                raise RiscParseException(
+                    f'Unable to resolve location "{parts[2]}"'
+                )
 
     def assembly(self) -> str:
         return f'{self.mnemonic} x{self.rs1}, x{self.rs2}, {self.offset}'
@@ -296,16 +298,12 @@ class SBTypeRiscInstruction(RiscInstruction):
 class STypeRiscInstruction(RiscInstruction):
     FORMAT = r'([a-z0-9]+),\s*(-?[0-9]+)\(([a-z0-9]+)\)'
 
-    @multimethod
-    def __init__(self, rs1: int, rs2: int, n: RiscInteger):
+    def initialize(self, rs1: int, rs2: int, n: RiscInteger):
         self.rs1 = rs1
         self.rs2 = rs2
         self.n = n
 
-    @multimethod
-    def __init__(self, code: RiscInteger, swirl=True): # noqa
-        super().__init__(code)
-
+    def decode(self, code: RiscInteger, swirl=True): # noqa
         self.n = RiscInteger([
             code.bits[7:12],
             code.bits[25:],
