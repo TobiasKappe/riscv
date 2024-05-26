@@ -1,6 +1,6 @@
 import pytest
 
-from ouca.riscv import sim
+from ouca.riscv.data import RiscInteger, RiscIntegerException
 
 
 class TestRiscInteger:
@@ -21,7 +21,7 @@ class TestRiscInteger:
         ]
     )
     def test_constructor_int(self, number, signed, pad, bits):
-        integer = sim.RiscInteger(number, signed=signed)
+        integer = RiscInteger(number, signed=signed)
         assert integer.bits == bits + [pad] * (32-len(bits))
 
     @pytest.mark.parametrize(
@@ -36,15 +36,15 @@ class TestRiscInteger:
         ]
     )
     def test_constructor_int_range(self, number, signed):
-        with pytest.raises(sim.RiscIntegerException):
-            sim.RiscInteger(number, signed=signed)
+        with pytest.raises(RiscIntegerException):
+            RiscInteger(number, signed=signed)
 
     @pytest.mark.parametrize('pattern, bits, pad', [
         ([True]*32, [True]*32, None),
         ([False]*32, [False]*32, None),
-        ([(sim.RiscInteger(123), 32)], sim.RiscInteger(123).bits, None),
+        ([(RiscInteger(123), 32)], RiscInteger(123).bits, None),
         (
-            [(0b101, 3), (0b111, 5), (sim.RiscInteger(0b010), 3)] + [False]*21,
+            [(0b101, 3), (0b111, 5), (RiscInteger(0b010), 3)] + [False]*21,
             [True, False, True, True,
              True, True, False, False,
              False, True, False],
@@ -52,12 +52,12 @@ class TestRiscInteger:
         ),
     ])
     def test_constructor_bits(self, pattern, bits, pad):
-        integer = sim.RiscInteger(pattern)
+        integer = RiscInteger(pattern)
         assert integer.bits == bits + [pad] * (32-len(bits))
 
     @pytest.mark.parametrize('pattern', [
         [123],
-        [(sim.RiscInteger(123), 'foo')],
+        [(RiscInteger(123), 'foo')],
         [(123, 'foo')],
         [('foo', 10)],
         [(123, 456, 789)],
@@ -65,8 +65,8 @@ class TestRiscInteger:
         [(0b0, 3), 123],
     ])
     def test_constructor_bits_types(self, pattern: list):
-        with pytest.raises(sim.RiscIntegerException) as exc:
-            sim.RiscInteger(pattern)
+        with pytest.raises(RiscIntegerException) as exc:
+            RiscInteger(pattern)
 
         assert 'Cannot decode' in str(exc)
 
@@ -74,12 +74,12 @@ class TestRiscInteger:
         [True],
         [False]*33,
         [[False]*16, [True]*15],
-        [(sim.RiscInteger(0b101), 3)]*11,
-        [(sim.RiscInteger(0b0), 20), (123, 13)],
+        [(RiscInteger(0b101), 3)]*11,
+        [(RiscInteger(0b0), 20), (123, 13)],
     ])
     def test_constructor_bits_length(self, pattern: list):
-        with pytest.raises(sim.RiscIntegerException) as exc:
-            sim.RiscInteger(pattern)
+        with pytest.raises(RiscIntegerException) as exc:
+            RiscInteger(pattern)
 
         assert 'must be 32 bits' in str(exc)
 
@@ -93,7 +93,7 @@ class TestRiscInteger:
         ]
     )
     def test_sign_bit(self, number, sign):
-        integer = sim.RiscInteger(number)
+        integer = RiscInteger(number)
         assert integer.sign_bit is sign
 
     @pytest.mark.parametrize(
@@ -108,9 +108,9 @@ class TestRiscInteger:
         ]
     )
     def test_add(self, a, b, c):
-        a_integer = sim.RiscInteger(a)
-        b_integer = sim.RiscInteger(b)
-        c_integer = sim.RiscInteger(c)
+        a_integer = RiscInteger(a)
+        b_integer = RiscInteger(b)
+        c_integer = RiscInteger(c)
 
         assert a_integer + b_integer == c_integer
 
@@ -126,9 +126,9 @@ class TestRiscInteger:
         ]
     )
     def test_sub(self, a, b, c):
-        a_integer = sim.RiscInteger(a)
-        b_integer = sim.RiscInteger(b)
-        c_integer = sim.RiscInteger(c)
+        a_integer = RiscInteger(a)
+        b_integer = RiscInteger(b)
+        c_integer = RiscInteger(c)
 
         assert a_integer - b_integer == c_integer
 
@@ -143,7 +143,7 @@ class TestRiscInteger:
         ]
     )
     def test_neg(self, a, minus_a):
-        assert -sim.RiscInteger(a) == sim.RiscInteger(minus_a)
+        assert -RiscInteger(a) == RiscInteger(minus_a)
 
     @pytest.mark.parametrize(
         'bits, signed, as_int',
@@ -156,7 +156,7 @@ class TestRiscInteger:
         ]
     )
     def test_to_int(self, bits, signed, as_int):
-        assert sim.RiscInteger(bits).to_int(signed=signed) == as_int
+        assert RiscInteger(bits).to_int(signed=signed) == as_int
 
     @pytest.mark.parametrize(
         'a, b, less_than',
@@ -171,7 +171,7 @@ class TestRiscInteger:
         ]
     )
     def test_compare(self, a, b, less_than):
-        assert (sim.RiscInteger(a) < sim.RiscInteger(b)) is less_than
+        assert (RiscInteger(a) < RiscInteger(b)) is less_than
 
     @pytest.mark.parametrize(
         'bits, amount, outcome',
@@ -184,7 +184,7 @@ class TestRiscInteger:
         ]
     )
     def test_lshift(self, bits, amount, outcome):
-        assert sim.RiscInteger(bits) << amount == sim.RiscInteger(outcome)
+        assert RiscInteger(bits) << amount == RiscInteger(outcome)
 
     @pytest.mark.parametrize(
         'bits, amount, outcome',
@@ -198,7 +198,7 @@ class TestRiscInteger:
         ]
     )
     def test_rshift(self, bits, amount, outcome):
-        assert sim.RiscInteger(bits) >> amount == sim.RiscInteger(outcome)
+        assert RiscInteger(bits) >> amount == RiscInteger(outcome)
 
     @pytest.mark.parametrize(
         'a, b, c',
@@ -209,7 +209,7 @@ class TestRiscInteger:
         ]
     )
     def test_or(self, a, b, c):
-        assert sim.RiscInteger(a) | sim.RiscInteger(b) == sim.RiscInteger(c)
+        assert RiscInteger(a) | RiscInteger(b) == RiscInteger(c)
 
     @pytest.mark.parametrize(
         'a, b, c',
@@ -221,4 +221,4 @@ class TestRiscInteger:
         ]
     )
     def test_and(self, a, b, c):
-        assert sim.RiscInteger(a) & sim.RiscInteger(b) == sim.RiscInteger(c)
+        assert RiscInteger(a) & RiscInteger(b) == RiscInteger(c)

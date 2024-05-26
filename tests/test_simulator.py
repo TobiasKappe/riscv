@@ -2,7 +2,8 @@ import math
 
 import pytest
 
-from ouca.riscv import sim
+from ouca.riscv.data import RiscInteger
+from ouca.riscv.simulator import RiscSimulator
 
 
 class TestRiscSimulator:
@@ -22,9 +23,9 @@ class TestRiscSimulator:
             'end:',
         ]
 
-        s = sim.RiscSimulator(instructions)
-        s.machine.registers[1] = sim.RiscInteger(value)
+        s = RiscSimulator(instructions)
+        s.machine.registers[1] = RiscInteger(value)
         s.simulate()
 
         assert s.machine.registers[2] == \
-            sim.RiscInteger(math.floor(math.sqrt(value)))
+            RiscInteger(math.floor(math.sqrt(value)))
