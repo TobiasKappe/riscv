@@ -105,6 +105,17 @@ class RiscInteger:
     def __ge__(self, other) -> bool:
         return not (self < other)
 
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            value = 0
+            for exp, i in enumerate(range(*key.indices(len(self.bits)))):
+                if self.bits[i]:
+                    value += 2**exp
+
+            return value
+        elif isinstance(key, int):
+            return self.bits[key]
+
     def to_int(self, signed=True):
         as_int = 0
         for i in range(31):
