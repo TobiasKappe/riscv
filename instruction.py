@@ -141,6 +141,21 @@ class RTypeRiscInstruction(RiscInstruction):
         self.rs1 = RiscInstruction.parse_register(parts[1])
         self.rs2 = RiscInstruction.parse_register(parts[2])
 
+    @multimethod
+    def __init__(self, code: RiscInteger): # noqa
+        super().__init__(code)
+
+        self.rd = code[7:12]
+
+        if code[12:15] != self.FUNCT3:
+            raise RiscInstructionException('Wrong funct3')
+
+        self.rs1 = code[15:20]
+        self.rs2 = code[20:25]
+
+        if code[25:] != self.FUNCT7:
+            raise RiscInstructionException('Wrong funct7')
+
     def assembly(self) -> str:
         return f'{self.mnemonic} x{self.rd}, x{self.rs1}, x{self.rs2}'
 
@@ -169,6 +184,21 @@ class ITypeRiscInstruction(RiscInstruction):
         self.rd = RiscInstruction.parse_register(parts[0])
         self.rs1 = RiscInstruction.parse_register(parts[1])
         self.n = RiscInstruction.parse_immediate(parts[2])
+
+    @multimethod
+    def __init__(self, code: RiscInteger): # noqa
+        super().__init__(code)
+
+        self.rd = code[7:12]
+
+        if code[12:15] != self.FUNCT3:
+            raise RiscInstructionException('Wrong funct3')
+
+        self.rs1 = code[15:20]
+        self.n = RiscInteger([
+            code.bits[20:],
+            code.bits[31:32] * 20
+        ])
 
     def assembly(self) -> str:
         return f'{self.mnemonic} x{self.rd}, x{self.rs1}, {self.n}'
@@ -212,6 +242,31 @@ class SBTypeRiscInstruction(RiscInstruction):
                     f'Unable to resolve location "{parts[2]}"'
                 )
 
+    @multimethod
+    def __init__(self, code: RiscInteger, swirl=True): # noqa
+        super().__init__(code)
+
+        if swirl:
+            self.offset = RiscInteger([
+                [False],
+                code.bits[8:12],
+                code.bits[25:31],
+                code.bits[7:8],
+                code.bits[31:] * 20,
+            ])
+        else:
+            self.offset = RiscInteger([
+                code[7:12],
+                code[25:],
+                code[31:] * 20
+            ])
+
+        if code[12:15] != self.FUNCT3:
+            raise RiscInstructionException('Wrong funct3')
+
+        self.rs1 = code[15:20]
+        self.rs2 = code[20:25]
+
     def assembly(self) -> str:
         return f'{self.mnemonic} x{self.rs1}, x{self.rs2}, {self.offset}'
 
@@ -246,6 +301,22 @@ class STypeRiscInstruction(RiscInstruction):
         self.rs1 = rs1
         self.rs2 = rs2
         self.n = n
+
+    @multimethod
+    def __init__(self, code: RiscInteger, swirl=True): # noqa
+        super().__init__(code)
+
+        self.n = RiscInteger([
+            code.bits[7:12],
+            code.bits[25:],
+            code.bits[31:] * 20
+        ])
+
+        if code[12:15] != self.FUNCT3:
+            raise RiscInstructionException('Wrong funct3')
+
+        self.rs1 = code[15:20]
+        self.rs2 = code[20:25]
 
     def encode(self) -> RiscInteger:
         return RiscInteger([

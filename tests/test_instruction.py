@@ -21,6 +21,12 @@ class TestAddRiscInstruction:
 
         assert machine.registers[3] == RiscInteger(579)
 
+    def test_decode(self):
+        instr = AddRiscInstruction(RiscInteger(0b1101101010000001110110011))
+        assert instr.rd == 7
+        assert instr.rs1 == 10
+        assert instr.rs2 == 27
+
     def test_encode(self):
         add = AddRiscInstruction(7, 10, 27)
         assert add.encode() == \
@@ -36,6 +42,14 @@ class TestAddImmediateRiscInstruction:
         add.run(machine)
 
         assert machine.registers[3] == RiscInteger(579)
+
+    def test_decode(self):
+        instr = AddImmediateRiscInstruction(
+            RiscInteger(0b01101101101110001000010000010011)
+        )
+        assert instr.rd == 8
+        assert instr.rs1 == 17
+        assert instr.n == RiscInteger(1755)
 
     def test_encode(self):
         addi = AddImmediateRiscInstruction(8, 17, RiscInteger(1755))
@@ -76,6 +90,14 @@ class TestBranchLessThanRiscInstruction:
 
         assert machine.program_counter == 1000
 
+    def test_decode(self):
+        blt = BranchLessThanRiscInstruction(
+            RiscInteger(0b11001001011101011100100001100011, signed=False)
+        )
+        assert blt.rs1 == 11
+        assert blt.rs2 == 23
+        assert blt.offset == RiscInteger(-2928)
+
     def test_encode(self):
         blt = BranchLessThanRiscInstruction(11, 23, RiscInteger(-2928))
         assert blt.encode() == \
@@ -99,6 +121,14 @@ class TestLoadWordRiscInstruction:
         lw.run(machine)
 
         assert machine.registers[2] == RiscInteger(value)
+
+    def test_decode(self):
+        lw = LoadWordRiscInstruction(
+            RiscInteger(0b11011011011010110010011100000011, signed=False)
+        )
+        assert lw.rd == 14
+        assert lw.rs1 == 22
+        assert lw.n == RiscInteger(-586)
 
     def test_encode(self):
         lw = LoadWordRiscInstruction(14, 22, RiscInteger(-586))
@@ -124,6 +154,14 @@ class TestStoreWordRiscInstruction:
 
         assert address in machine.memory
         assert machine.memory[address] == RiscInteger(value)
+
+    def test_decode(self):
+        sw = StoreWordRiscInstruction(
+            RiscInteger(0b01010101001111101010101010100011)
+        )
+        assert sw.rs1 == 29
+        assert sw.rs2 == 19
+        assert sw.n == RiscInteger(1365)
 
     def test_encode(self):
         sw = StoreWordRiscInstruction(29, 19, RiscInteger(1365))
