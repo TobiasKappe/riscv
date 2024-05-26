@@ -283,8 +283,8 @@ class RiscAssembler:
         locations = {}
         offset = 0
         for line in lines:
-            # Remove comments started with "#" or ";"
-            match = re.match('([^;#]*)([;#].*)?', line)
+            # Remove comments started with "#", "//", or ";"
+            match = re.match('([^;#/]*)(([;#]|//).*)?', line)
             line = match.group(1).strip()
 
             # Ignore empty lines
