@@ -2,7 +2,6 @@ from typing import Tuple, Dict
 
 from multimethod import multimethod
 
-from ouca.riscv.assembler import RiscAssembler, AssemblerException
 from ouca.riscv.data import RiscInteger
 from ouca.riscv.instruction import RiscInstruction
 from ouca.riscv.machine import RiscMachine
@@ -75,7 +74,7 @@ class BranchRiscInstruction(RiscInstruction):
             ])
 
 
-@RiscAssembler.register_instruction('beq')
+@RiscInstruction.register_instruction('beq')
 class BranchEqualRiscInstruction(BranchRiscInstruction):
     def condition(self, machine):
         return machine.read_register(self.rs1) == \
@@ -85,7 +84,7 @@ class BranchEqualRiscInstruction(BranchRiscInstruction):
         return 0b000
 
 
-@RiscAssembler.register_instruction('bge')
+@RiscInstruction.register_instruction('bge')
 class BranchGreaterEqualRiscInstruction(BranchRiscInstruction):
     def condition(self, machine):
         return machine.read_register(self.rs1) >= \
@@ -95,7 +94,7 @@ class BranchGreaterEqualRiscInstruction(BranchRiscInstruction):
         return 0b101
 
 
-@RiscAssembler.register_instruction('blt')
+@RiscInstruction.register_instruction('blt')
 class BranchLessThanRiscInstruction(BranchRiscInstruction):
     def condition(self, machine):
         return machine.read_register(self.rs1) < \

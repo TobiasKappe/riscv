@@ -2,13 +2,12 @@ from typing import Tuple
 
 from multimethod import multimethod
 
-from ouca.riscv.assembler import RiscAssembler
 from ouca.riscv.data import RiscInteger
 from ouca.riscv.instruction import RiscInstruction
 from ouca.riscv.machine import RiscMachine
 
 
-@RiscAssembler.register_instruction('add')
+@RiscInstruction.register_instruction('add')
 class AddRiscInstruction(RiscInstruction):
     FORMAT = r'([a-z0-9]+),\s*([a-z0-9]+),\s*([a-z0-9]+)'
 
@@ -46,7 +45,7 @@ class AddRiscInstruction(RiscInstruction):
         ])
 
 
-@RiscAssembler.register_instruction('addi')
+@RiscInstruction.register_instruction('addi')
 class AddImmediateRiscInstruction(RiscInstruction):
     FORMAT = r'([a-z0-9]+),\s*([a-z0-9]+),\s*(-?[0-9]+)'
 
