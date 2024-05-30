@@ -57,6 +57,8 @@ class RiscInstruction:
                 return int(name[1:])
             except ValueError:
                 raise RiscParseException(f'Unknown register name: "{name}"')
+        elif name == 'zero':
+            return 0
         else:
             raise RiscParseException('Register names should start with "x"')
 
