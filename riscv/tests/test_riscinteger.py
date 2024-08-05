@@ -1,6 +1,6 @@
 import pytest
 
-from ouca.riscv.data import RiscInteger, RiscIntegerException
+from riscv.data import RiscInteger, RiscIntegerException
 
 
 class TestRiscInteger:

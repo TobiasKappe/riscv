@@ -1,12 +1,12 @@
 import pytest
 
-from ouca.riscv.data import RiscInteger
-from ouca.riscv.machine import RiscMachine
-from ouca.riscv.implementation.arithmetic import \
+from riscv.data import RiscInteger
+from riscv.machine import RiscMachine
+from riscv.implementation.arithmetic import \
     AddRiscInstruction, AddImmediateRiscInstruction
-from ouca.riscv.implementation.branch import \
+from riscv.implementation.branch import \
     BranchLessThanRiscInstruction
-from ouca.riscv.implementation.memory import \
+from riscv.implementation.memory import \
     LoadWordRiscInstruction, StoreWordRiscInstruction
 
 

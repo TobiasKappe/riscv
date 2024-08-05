@@ -1,6 +1,6 @@
-from ouca.riscv.instruction import \
+from riscv.instruction import \
     ITypeRiscInstruction, RTypeRiscInstruction, RiscInstruction
-from ouca.riscv.machine import RiscMachine
+from riscv.machine import RiscMachine
 
 
 @RiscInstruction.register_instruction('add')

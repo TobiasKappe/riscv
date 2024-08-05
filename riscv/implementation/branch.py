@@ -1,5 +1,5 @@
-from ouca.riscv.instruction import SBTypeRiscInstruction, RiscInstruction
-from ouca.riscv.machine import RiscMachine
+from riscv.instruction import SBTypeRiscInstruction, RiscInstruction
+from riscv.machine import RiscMachine
 
 
 class BranchRiscInstruction(SBTypeRiscInstruction):

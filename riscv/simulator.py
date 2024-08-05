@@ -2,8 +2,8 @@ from multimethod import multimethod
 from typing import List
 
 
-from ouca.riscv.instruction import RiscInstruction
-from ouca.riscv.machine import RiscMachine
+from riscv.instruction import RiscInstruction
+from riscv.machine import RiscMachine
 
 
 class RiscSimulator:

@@ -1,4 +1,4 @@
-from ouca.riscv.data import RiscInteger
+from riscv.data import RiscInteger
 
 
 class RiscMachine:

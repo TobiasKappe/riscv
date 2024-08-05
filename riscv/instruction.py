@@ -2,8 +2,8 @@ import re
 from multimethod import multimethod
 from typing import List, Dict, Tuple
 
-from ouca.riscv.machine import RiscMachine
-from ouca.riscv.data import RiscInteger
+from riscv.machine import RiscMachine
+from riscv.data import RiscInteger
 
 
 class RiscInstructionException(BaseException):

@@ -2,8 +2,8 @@ import math
 
 import pytest
 
-from ouca.riscv.data import RiscInteger
-from ouca.riscv.simulator import RiscSimulator
+from riscv.data import RiscInteger
+from riscv.simulator import RiscSimulator
 
 
 class TestRiscSimulator:

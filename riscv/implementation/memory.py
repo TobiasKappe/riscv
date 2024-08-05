@@ -1,8 +1,8 @@
 from typing import Tuple
 
-from ouca.riscv.instruction import \
+from riscv.instruction import \
     ITypeRiscInstruction, STypeRiscInstruction, RiscInstruction
-from ouca.riscv.machine import RiscMachine
+from riscv.machine import RiscMachine
 
 
 @RiscInstruction.register_instruction('lw')
