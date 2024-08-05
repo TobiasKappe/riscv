@@ -1,5 +1,3 @@
-import math
-
 import pytest
 
 from riscv.data import RiscInteger
@@ -7,25 +5,35 @@ from riscv.simulator import RiscSimulator
 
 
 class TestRiscSimulator:
-    @pytest.mark.parametrize('value', [8, 9, 10, 71, 169])
-    def test_square_root(self, value):
+    @pytest.mark.parametrize('value', range(20))
+    def test_fibonnacci(self, value):
+        def fib_rec(n):
+            if n == 0:
+                return 0
+            elif n == 1:
+                return 1
+            else:
+                return fib_rec(n-1) + fib_rec(n-2)
+
         instructions = [
-            'add x2, x0, x0',
-            'add x3, x0, x0',
+            'addi x2, x0, 1',
+            'addi x3, x0, 0',
             'addi x4, x0, 1',
-            'start:',
-            'add x5, x3, x4',
-            'blt x1, x5, end',
-            'add x3, x3, x4',
-            'addi x4, x4, 2',
-            'addi x2, x2, 1',
-            'blt x0, x1, start',
-            'end:',
+            'blt x0, x1, check',
+            'addi x2, x0, 0',
+            'blt x0, x1, exit',
+            'loop:',
+            'add x5, x2, x3',
+            'add x3, x0, x2',
+            'add x2, x0, x5',
+            'addi x4, x4, 1',
+            'check:',
+            'blt x4, x1, loop',
+            'exit:',
         ]
 
         s = RiscSimulator(instructions)
         s.machine.registers[1] = RiscInteger(value)
         s.simulate()
 
-        assert s.machine.registers[2] == \
-            RiscInteger(math.floor(math.sqrt(value)))
+        assert s.machine.registers[2] == RiscInteger(fib_rec(value))
